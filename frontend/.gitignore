@@ -1,0 +1,22 @@
+# Python
+backend/venv/
+__pycache__/
+*.pyc
+
+# Environment
+.env
+backend/.env
+
+# Audio/temp files
+backend/audio/
+backend/temp_audio/
+backend/temp_*.ogg
+backend/temp_*.webm
+backend/temp_*.mp3
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# System
+.DS_Store
