@@ -11,8 +11,9 @@ const RECORDING_FORMATS = [
 ];
 
 const SILENCE_LIMIT_MS = 850;
-const MIN_SPEECH_MS = 250;
-const VOICE_THRESHOLD = 0.035;
+const INDIC_SILENCE_LIMIT_MS = 1300;
+const MIN_SPEECH_MS = 450;
+const VOICE_THRESHOLD = 0.028;
 
 const getSupportedRecordingFormat = () => {
   if (!window.MediaRecorder) {
@@ -52,6 +53,7 @@ function App() {
   const interruptStartedAtRef = useRef(null);
   const shouldSubmitRecordingRef = useRef(false);
   const speechStartedAtRef = useRef(null);
+  const lastVoiceAtRef = useRef(null);
   const silenceStartedAtRef = useRef(null);
   const isSubmittingRef = useRef(false);
   const handsFreeActiveRef = useRef(false);
@@ -101,7 +103,7 @@ function App() {
         : "Tap the mic and speak naturally.",
     listening:
       conversationMode === "hands-free"
-        ? "Speak naturally; I will send it after a pause."
+        ? "Speak naturally; I will send it after a clear pause."
         : "I am listening now.",
     thinking: "Preparing a short reply.",
     speaking:
@@ -155,6 +157,7 @@ function App() {
 
     analyserRef.current = null;
     speechStartedAtRef.current = null;
+    lastVoiceAtRef.current = null;
     silenceStartedAtRef.current = null;
   };
 
@@ -195,6 +198,11 @@ function App() {
       }
     }, 350);
   };
+
+  const getSilenceLimit = () =>
+    ["hi", "gu"].includes(languageRef.current)
+      ? INDIC_SILENCE_LIMIT_MS
+      : SILENCE_LIMIT_MS;
 
   const playAudioUrl = (audioUrl) => {
     stopBotAudio();
@@ -248,6 +256,15 @@ function App() {
       playAudioUrl(data.audio_stream_url);
     } catch (error) {
       setLoading(false);
+      if (
+        handsFreeActiveRef.current &&
+        (error.message || "").toLowerCase().includes("no speech")
+      ) {
+        setBotStatus("idle");
+        restartHandsFreeSoon();
+        return;
+      }
+
       showNotice(error.message || "I had trouble hearing that. Try again?");
       setBotStatus("idle");
       restartHandsFreeSoon();
@@ -342,16 +359,29 @@ function App() {
       if (!speechStartedAtRef.current) {
         speechStartedAtRef.current = now;
       }
+      lastVoiceAtRef.current = now;
       silenceStartedAtRef.current = null;
-    } else if (
-      speechStartedAtRef.current &&
-      now - speechStartedAtRef.current > MIN_SPEECH_MS
-    ) {
+    } else if (speechStartedAtRef.current && lastVoiceAtRef.current) {
+      const speechDuration = lastVoiceAtRef.current - speechStartedAtRef.current;
+
+      if (speechDuration < MIN_SPEECH_MS && now - lastVoiceAtRef.current > 700) {
+        speechStartedAtRef.current = null;
+        lastVoiceAtRef.current = null;
+        silenceStartedAtRef.current = null;
+        vadFrameRef.current = requestAnimationFrame(monitorSilence);
+        return;
+      }
+
+      if (speechDuration < MIN_SPEECH_MS) {
+        vadFrameRef.current = requestAnimationFrame(monitorSilence);
+        return;
+      }
+
       if (!silenceStartedAtRef.current) {
         silenceStartedAtRef.current = now;
       }
 
-      if (now - silenceStartedAtRef.current > SILENCE_LIMIT_MS) {
+      if (now - silenceStartedAtRef.current > getSilenceLimit()) {
         shouldSubmitRecordingRef.current = true;
         cleanupVad();
 
