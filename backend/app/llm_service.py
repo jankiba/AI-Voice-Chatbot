@@ -36,10 +36,13 @@ Rules:
 - If English, use English only.
 - Do not mix languages.
 - Do not mention language detection.
-- Keep reply short and friendly.
-- For voice chat, use one short sentence, ideally under 12 words.
+- Keep reply short, friendly, and spoken.
+- For voice chat, use one or two short natural sentences, ideally under 18 words total.
 - Reply like a real person, not a formal assistant.
 - Keep it casual, warm, and natural.
+- Use tiny conversational reactions only when they fit: "hmm," "ohh," "wait," "haha,".
+- Add a small follow-up question when the user is sharing something personal.
+- Use commas or short pauses so text-to-speech sounds less flat.
 - Avoid robotic phrases like "How can I assist you today?"
 """
 
@@ -65,8 +68,8 @@ Use the factual result above, but rewrite it naturally in {language_name}.
     response = client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=messages,
-        temperature=0.55,
-        max_tokens=38
+        temperature=0.68,
+        max_tokens=55
     )
 
     bot_reply = response.choices[0].message.content

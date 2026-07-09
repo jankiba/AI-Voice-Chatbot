@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 import time
 import uuid
 
@@ -17,13 +18,47 @@ EDGE_VOICES = {
     "gu": "gu-IN-DhwaniNeural",
 }
 
-EDGE_RATE = "-4%"
-EDGE_PITCH = "+0Hz"
+EDGE_RATE = "-8%"
+EDGE_PITCH = "-1Hz"
+
+SPOKEN_PAUSES = {
+    "ohh": "ohh,",
+    "hmm": "hmm,",
+    "wait": "wait,",
+    "haha": "haha,",
+    "aww": "aww,",
+}
+
+
+def prepare_spoken_text(text: str, lang: str):
+    spoken = " ".join(text.strip().split())
+
+    if not spoken:
+        return spoken
+
+    if lang == "en":
+        for word, replacement in SPOKEN_PAUSES.items():
+            spoken = re.sub(
+                rf"\b{word}\b(?![,!?])",
+                replacement,
+                spoken,
+                flags=re.IGNORECASE,
+            )
+
+        spoken = spoken.replace("...", ", ")
+        spoken = re.sub(r"\s+([,.!?])", r"\1", spoken)
+        spoken = re.sub(r"([.!?]){2,}", r"\1", spoken)
+
+    if spoken[-1] not in ".!?।":
+        spoken += "."
+
+    return spoken
 
 
 async def generate_edge_speech(text: str, filepath: str, lang: str):
+    spoken_text = prepare_spoken_text(text, lang)
     communicate = edge_tts.Communicate(
-        text=text,
+        text=spoken_text,
         voice=EDGE_VOICES.get(lang, EDGE_VOICES["en"]),
         rate=EDGE_RATE,
         pitch=EDGE_PITCH,
@@ -36,8 +71,9 @@ async def stream_edge_speech(text: str, language: str = "auto"):
     first_chunk_sent = False
     selected_language = normalize_language(language)
     lang = selected_language if selected_language != "auto" else detect_language(text)
+    spoken_text = prepare_spoken_text(text, lang)
     communicate = edge_tts.Communicate(
-        text=text,
+        text=spoken_text,
         voice=EDGE_VOICES.get(lang, EDGE_VOICES["en"]),
         rate=EDGE_RATE,
         pitch=EDGE_PITCH,
