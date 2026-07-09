@@ -341,6 +341,36 @@ select {
   cursor: pointer;
 }
 
+.mode-toggle {
+  height: 44px;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.mode-toggle button {
+  min-width: 104px;
+  height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  color: #aeb8c2;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.mode-toggle button.active {
+  color: #071312;
+  background: linear-gradient(135deg, #5eead4, #fbbf24);
+  box-shadow: 0 10px 26px rgba(45, 212, 191, 0.22);
+}
+
 .conversation-panel {
   align-self: center;
   display: grid;
@@ -547,8 +577,15 @@ select {
   }
 
   .status-pill,
-  .language-select {
+  .language-select,
+  .mode-toggle {
     flex: 1 1 132px;
+  }
+
+  .mode-toggle button {
+    min-width: 0;
+    padding: 0 8px;
+    font-size: 12px;
   }
 
   .voice-orb {
