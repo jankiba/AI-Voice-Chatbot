@@ -10,8 +10,8 @@ const RECORDING_FORMATS = [
   { mimeType: "audio/mp4", extension: "m4a" },
 ];
 
-const SILENCE_LIMIT_MS = 1300;
-const MIN_SPEECH_MS = 350;
+const SILENCE_LIMIT_MS = 850;
+const MIN_SPEECH_MS = 250;
 const VOICE_THRESHOLD = 0.035;
 
 const getSupportedRecordingFormat = () => {
