@@ -1,0 +1,12 @@
+backend/.env
+backend/venv/
+backend/audio/
+backend/temp_audio/
+backend/temp_*
+
+frontend/node_modules/
+frontend/dist/
+
+__pycache__/
+*.py[cod]
+.DS_Store

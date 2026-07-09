@@ -1,5 +1,20 @@
 import re
 
+SUPPORTED_LANGUAGES = {"en", "hi", "gu"}
+LANGUAGE_NAMES = {
+    "en": "English",
+    "hi": "Hindi",
+    "gu": "Gujarati",
+}
+
+
+def normalize_language(language: str) -> str:
+    if language in SUPPORTED_LANGUAGES:
+        return language
+
+    return "auto"
+
+
 def detect_language(text: str) -> str:
     text_lower = text.lower().strip()
 
@@ -32,10 +47,15 @@ def detect_language(text: str) -> str:
     return "en"
 
 
+def contains_language_script(text: str, lang_code: str) -> bool:
+    if lang_code == "gu":
+        return any("\u0A80" <= char <= "\u0AFF" for char in text)
+
+    if lang_code == "hi":
+        return any("\u0900" <= char <= "\u097F" for char in text)
+
+    return True
+
+
 def get_language_name(lang_code: str) -> str:
-    languages = {
-        "en": "English",
-        "hi": "Hindi",
-        "gu": "Gujarati"
-    }
-    return languages.get(lang_code, "English")
+    return LANGUAGE_NAMES.get(lang_code, "English")

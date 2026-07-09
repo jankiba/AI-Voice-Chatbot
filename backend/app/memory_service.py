@@ -12,8 +12,8 @@ def add_message(role: str, message: str):
         conversation_history.pop(0)
 
 
-def get_history():
-    return conversation_history
+def get_history(limit: int = 6):
+    return conversation_history[-limit:]
 
 
 def clear_history():
