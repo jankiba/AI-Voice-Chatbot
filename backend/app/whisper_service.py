@@ -11,7 +11,7 @@ WHISPER_MODEL_SIZE = os.getenv("WHISPER_MODEL_SIZE", "small")
 STT_PROVIDER = os.getenv("STT_PROVIDER", "groq")
 GROQ_STT_MODEL = os.getenv("GROQ_STT_MODEL", "whisper-large-v3-turbo")
 ENABLE_TRANSCRIPT_CORRECTION = (
-    os.getenv("ENABLE_TRANSCRIPT_CORRECTION", "false").lower() == "true"
+    os.getenv("ENABLE_TRANSCRIPT_CORRECTION", "true").lower() == "true"
 )
 
 groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
@@ -29,6 +29,10 @@ LANGUAGE_PROMPTS = {
         "main theek hoon = मैं ठीक हूँ, kya kar rahe ho = क्या कर रहे हो."
     ),
     "en": "This is an English voice message. Please transcribe it accurately.",
+    "auto": (
+        "This voice message may be English, Hindi, Gujarati, Roman Hindi, "
+        "or Roman Gujarati. Transcribe it in the language the speaker used."
+    ),
 }
 
 TRANSCRIPT_FIXES = {
@@ -78,14 +82,15 @@ def transcribe_with_groq(audio_path: str, language: str):
         raise RuntimeError("GROQ_API_KEY is missing")
 
     normalized_language = normalize_language(language)
-    speech_language = "en" if normalized_language == "auto" else normalized_language
     transcription_args = {
         "model": GROQ_STT_MODEL,
         "response_format": "json",
         "temperature": 0,
-        "language": speech_language,
-        "prompt": LANGUAGE_PROMPTS.get(speech_language),
+        "prompt": LANGUAGE_PROMPTS.get(normalized_language),
     }
+
+    if normalized_language != "auto":
+        transcription_args["language"] = normalized_language
 
     with open(audio_path, "rb") as audio_file:
         transcription = groq_client.audio.transcriptions.create(
@@ -181,15 +186,21 @@ def clean_transcript(text: str, language: str):
 def transcribe_with_local_whisper(audio_path: str, language: str):
     model = get_local_model()
     normalized_language = normalize_language(language)
-    whisper_language = "en" if normalized_language == "auto" else normalized_language
+    whisper_language = None if normalized_language == "auto" else normalized_language
+
+    transcribe_kwargs = {
+        "task": "transcribe",
+        "beam_size": 1,
+        "vad_filter": True,
+        "initial_prompt": LANGUAGE_PROMPTS.get(normalized_language),
+    }
+
+    if whisper_language:
+        transcribe_kwargs["language"] = whisper_language
 
     segments, info = model.transcribe(
         audio_path,
-        language=whisper_language,
-        task="transcribe",
-        beam_size=1,
-        vad_filter=True,
-        initial_prompt=LANGUAGE_PROMPTS.get(normalized_language)
+        **transcribe_kwargs
     )
 
     text = ""

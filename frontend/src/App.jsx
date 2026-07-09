@@ -31,7 +31,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [botStatus, setBotStatus] = useState("idle");
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState("auto");
   const [lastUserText, setLastUserText] = useState("");
   const [lastBotReply, setLastBotReply] = useState("");
   const [notice, setNotice] = useState("");
@@ -588,6 +588,7 @@ function App() {
                 value={language}
                 onChange={(event) => setLanguage(event.target.value)}
               >
+                <option value="auto">Auto</option>
                 <option value="en">English</option>
                 <option value="hi">Hindi</option>
                 <option value="gu">Gujarati</option>
