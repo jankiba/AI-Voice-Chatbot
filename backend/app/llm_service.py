@@ -62,7 +62,7 @@ Use the factual result above, but rewrite it naturally in {language_name}.
         }
     ]
 
-    messages.extend(get_history(limit=4))
+    messages.extend(get_history(limit=10))
     messages.append({"role": "user", "content": user_message})
 
     response = client.chat.completions.create(

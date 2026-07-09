@@ -1,3 +1,5 @@
+MAX_CONVERSATION_MESSAGES = 10
+
 conversation_history = []
 
 
@@ -7,12 +9,11 @@ def add_message(role: str, message: str):
         "content": message
     })
 
-    # Keep only the last 10 messages
-    if len(conversation_history) > 10:
+    if len(conversation_history) > MAX_CONVERSATION_MESSAGES:
         conversation_history.pop(0)
 
 
-def get_history(limit: int = 6):
+def get_history(limit: int = MAX_CONVERSATION_MESSAGES):
     return conversation_history[-limit:]
 
 
