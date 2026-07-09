@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
 from app.llm_service import generate_emotional_reply
-from app.tts_service import stream_edge_speech, text_to_speech
+from app.tts_service import stream_speech, text_to_speech
 from app.memory_service import get_history, clear_history
 from app.whisper_service import speech_to_text
 from app.conversation_service import handle_voice_chat
@@ -198,7 +198,7 @@ async def speak(job_id: str):
         )
 
     return StreamingResponse(
-        stream_edge_speech(job["text"], job["language"]),
+        stream_speech(job["text"], job["language"]),
         media_type="audio/mpeg"
     )
 
